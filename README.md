@@ -50,6 +50,9 @@ Try to test:
   ModelNet40. Those datasets come from [this CVPR 2015 paper][3], and papers
   often use ModelNet40 to compare different architectures and algorithms.
 
+- PointNet++ for segmentation on ShapeNet (but only using one class, need to expand on this).
+
+For detailed comparisons, please see the `bash/` folder.
 
 [1]:https://github.com/DanielTakeshi/pytorch_geometric/commit/a8601aafd7fc52b87b3f85e86013e64cb7af3e2d
 [2]:https://github.com/pyg-team/pytorch_geometric/commit/97d55577f1d0bf33c1bfbe0ef864923ad5cb844d
