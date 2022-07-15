@@ -50,7 +50,9 @@ Try to test:
   ModelNet40. Those datasets come from [this CVPR 2015 paper][3], and papers
   often use ModelNet40 to compare different architectures and algorithms.
 
-- PointNet++ for segmentation on ShapeNet (but only using one class, need to expand on this).
+- PointNet++ and Point Transformer for segmentation on ShapeNet (but only using
+  one class, need to expand on this). Metric seems to be IoU, but is it
+  categorical or is it instance level?
 
 For detailed comparisons, please see the `bash/` folder.
 

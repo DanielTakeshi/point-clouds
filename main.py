@@ -74,7 +74,7 @@ def train_segment(model, train_loader):
     for i, data in enumerate(train_loader):
         data = data.to(device)
         optimizer.zero_grad()
-        out = model(data)
+        out = model(data.x, data.pos, data.batch)
         loss = F.nll_loss(out, data.y)
         loss.backward()
         optimizer.step()
@@ -96,7 +96,7 @@ def test_segment(model, test_loader):
 
     for data in test_loader:
         data = data.to(device)
-        pred = model(data).argmax(dim=1)
+        pred = model(data.x, data.pos, data.batch).argmax(dim=1)
 
         i, u = i_and_u(pred, data.y, test_loader.dataset.num_classes, data.batch)
         iou = i.cpu().to(torch.float) / u.cpu().to(torch.float)
@@ -214,6 +214,18 @@ if __name__ == '__main__':
         scheduler = torch.optim.lr_scheduler.StepLR(
                 optimizer, step_size=20, gamma=0.5)
 
+    elif args.model == 'point_transformer' and task_type == 'segmentation':
+        from point_transformer_segmentation import Net
+        model = Net(
+            in_channels=3,
+            out_channels=train_dataset.num_classes,
+            dim_model=[32, 64, 128, 256, 512],
+            k=16,
+        ).to(device)
+        optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
+        scheduler = torch.optim.lr_scheduler.StepLR(
+                optimizer, step_size=20, gamma=0.5)
+
     else:
         raise ValueError(args.model)
 
@@ -247,6 +259,9 @@ if __name__ == '__main__':
         elif task_type == 'segmentation':
             train_loss, train_acc = train_segment(model, train_loader)
             test_iou = test_segment(model, test_loader)
+            if scheduler is not None:
+                scheduler.step()
+
             print(f'Epoch: {epoch:02d}, TrLoss: {train_loss:.4f}, Test IoU: {test_iou:.4f}')
             wandb_dict = {
                 'epoch': epoch,

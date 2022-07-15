@@ -39,8 +39,8 @@ class Net(torch.nn.Module):
         self.lin2 = torch.nn.Linear(128, 128)
         self.lin3 = torch.nn.Linear(128, num_classes)
 
-    def forward(self, data):
-        sa0_out = (data.x, data.pos, data.batch)
+    def forward(self, x, pos, batch):
+        sa0_out = (x, pos, batch)
         sa1_out = self.sa1_module(*sa0_out)
         sa2_out = self.sa2_module(*sa1_out)
         sa3_out = self.sa3_module(*sa2_out)
