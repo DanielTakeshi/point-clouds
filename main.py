@@ -16,9 +16,19 @@ import torch_geometric.transforms as T
 from torch_geometric.datasets import ModelNet
 from torch_geometric.loader import DataLoader
 
-
 def count_parameters(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
+
+
+def get_exp_dir(args):
+    """TODO: get experiment dir for wandb."""
+    exp_dir = f'{args.model}_{args.data}'
+    exp_dir += f'_{str(args.seed).zfill(3)}'
+    if 'pointnet2' in exp_dir:
+        exp_dir = exp_dir.replace('pointnet2', 'PNet2')
+    if 'point_transformer' in exp_dir:
+        exp_dir = exp_dir.replace('point_transformer', 'PtTransf')
+    return exp_dir
 
 
 def train(model, train_loader):
@@ -84,6 +94,19 @@ if __name__ == '__main__':
                                  batch_size=args.batch_size,
                                  shuffle=False,
                                  num_workers=6)
+    elif args.data == 'modelnet40':
+        path = osp.join(osp.dirname(osp.realpath(__file__)), 'data/ModelNet40')
+        pre_transform, transform = T.NormalizeScale(), T.SamplePoints(1024)
+        train_dataset = ModelNet(path, '40', True, transform, pre_transform)
+        test_dataset = ModelNet(path, '40', False, transform, pre_transform)
+        train_loader = DataLoader(train_dataset,
+                                  batch_size=args.batch_size,
+                                  shuffle=True,
+                                  num_workers=6)
+        test_loader = DataLoader(test_dataset,
+                                 batch_size=args.batch_size,
+                                 shuffle=False,
+                                 num_workers=6)
     else:
         raise ValueError(args.data)
 
@@ -110,10 +133,12 @@ if __name__ == '__main__':
         raise ValueError(args.model)
 
     # Bells and whistles.
+    exp_dir = get_exp_dir(args)
+    wandb.init(project="point-cloud", entity="danieltakeshi", name=exp_dir)
+    wandb.config.update(args)
+
     print(f'The classification model:\n{model}')
     print(f'Parameters: {count_parameters(model)}.\n')
-    wandb.init(project="point-cloud", entity="danieltakeshi")
-    wandb.config.update(args)
     start = time.time()
 
     # Train and test!

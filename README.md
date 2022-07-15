@@ -43,6 +43,10 @@ Try to test:
 - Different normalization statistics
 - And time all of this.
 
+## Supported Comparisons
+
+- PointNet++ and Point Transformer for classification on ModelNet10 and ModelNet40.
+
 
 [1]:https://github.com/DanielTakeshi/pytorch_geometric/commit/a8601aafd7fc52b87b3f85e86013e64cb7af3e2d
 [2]:https://github.com/pyg-team/pytorch_geometric/commit/97d55577f1d0bf33c1bfbe0ef864923ad5cb844d

@@ -1,5 +1,3 @@
-import os.path as osp
-
 import torch
 import torch.nn.functional as F
 from torch.nn import BatchNorm1d as BN
@@ -10,19 +8,9 @@ from torch.nn import Sequential as Seq
 from torch_cluster import fps, knn_graph
 from torch_scatter import scatter_max
 
-import torch_geometric.transforms as T
-from torch_geometric.datasets import ModelNet
-from torch_geometric.loader import DataLoader
 from torch_geometric.nn import global_mean_pool
 from torch_geometric.nn.conv import PointTransformerConv
 from torch_geometric.nn.pool import knn
-
-path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data/ModelNet10')
-pre_transform, transform = T.NormalizeScale(), T.SamplePoints(1024)
-train_dataset = ModelNet(path, '10', True, transform, pre_transform)
-test_dataset = ModelNet(path, '10', False, transform, pre_transform)
-train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
-test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False)
 
 
 class TransformerBlock(torch.nn.Module):
@@ -144,46 +132,3 @@ class Net(torch.nn.Module):
         out = self.mlp_output(x)
 
         return F.log_softmax(out, dim=-1)
-
-
-def train():
-    model.train()
-
-    total_loss = 0
-    for data in train_loader:
-        data = data.to(device)
-        optimizer.zero_grad()
-        out = model(data.x, data.pos, data.batch)
-        loss = F.nll_loss(out, data.y)
-        loss.backward()
-        total_loss += loss.item() * data.num_graphs
-        optimizer.step()
-    return total_loss / len(train_dataset)
-
-
-@torch.no_grad()
-def test(loader):
-    model.eval()
-
-    correct = 0
-    for data in loader:
-        data = data.to(device)
-        pred = model(data.x, data.pos, data.batch).max(dim=1)[1]
-        correct += pred.eq(data.y).sum().item()
-    return correct / len(loader.dataset)
-
-
-if __name__ == '__main__':
-
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    model = Net(0, train_dataset.num_classes,
-                dim_model=[32, 64, 128, 256, 512], k=16).to(device)
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=20,
-                                                gamma=0.5)
-
-    for epoch in range(1, 201):
-        loss = train()
-        test_acc = test(test_loader)
-        print(f'Epoch {epoch:03d}, Loss: {loss:.4f}, Test: {test_acc:.4f}')
-        scheduler.step()
