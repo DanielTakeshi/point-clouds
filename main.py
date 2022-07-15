@@ -21,7 +21,7 @@ def count_parameters(model):
 
 
 def get_exp_dir(args):
-    """TODO: get experiment dir for wandb."""
+    """Experiment dir for wandb."""
     exp_dir = f'{args.model}_{args.data}'
     exp_dir += f'_{str(args.seed).zfill(3)}'
     if 'pointnet2' in exp_dir:
@@ -72,6 +72,9 @@ if __name__ == '__main__':
     p.add_argument('--seed', type=int, default=0)
     p.add_argument('--epochs', type=int, default=200)
     p.add_argument('--batch_size', type=int, default=32)
+    p.add_argument('--lr', type=float, default=0.001)
+    p.add_argument('--dropout', type=float, default=0.5,
+        help='Dropout for PointNet++, does not seem used in PointTransformer')
     args = p.parse_args()
 
     # Bells and whistles.
@@ -114,9 +117,10 @@ if __name__ == '__main__':
     if args.model == 'pointnet2':
         from pointnet2_classification import Net
         model = Net(
-            out_channels=train_dataset.num_classes
+            out_channels=train_dataset.num_classes,
+            dropout=args.dropout,
         ).to(device)
-        optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+        optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
         scheduler = None
     elif args.model == 'point_transformer':
         from point_transformer_classification import Net
@@ -124,9 +128,9 @@ if __name__ == '__main__':
             in_channels=0,
             out_channels=train_dataset.num_classes,
             dim_model=[32, 64, 128, 256, 512],
-            k=16
+            k=16,
         ).to(device)
-        optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+        optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
         scheduler = torch.optim.lr_scheduler.StepLR(
                 optimizer, step_size=20, gamma=0.5)
     else:
