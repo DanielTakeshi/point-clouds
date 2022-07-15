@@ -46,8 +46,11 @@ Try to test:
 
 ## Supported Comparisons
 
-- PointNet++ and Point Transformer for classification on ModelNet10 and ModelNet40.
+- PointNet++ and Point Transformer for classification on ModelNet10 and
+  ModelNet40. Those datasets come from [this CVPR 2015 paper][3], and papers
+  often use ModelNet40 to compare different architectures and algorithms.
 
 
 [1]:https://github.com/DanielTakeshi/pytorch_geometric/commit/a8601aafd7fc52b87b3f85e86013e64cb7af3e2d
 [2]:https://github.com/pyg-team/pytorch_geometric/commit/97d55577f1d0bf33c1bfbe0ef864923ad5cb844d
+[3]:https://arxiv.org/abs/1406.5670
