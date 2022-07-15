@@ -36,5 +36,13 @@ directory, copy the files from [the commit tagged at that version][2] on
 2022/03/12.
 
 
+Try to test:
+
+- Different datasets
+- Different hyperparameters (and total number of parameters)
+- Different normalization statistics
+- And time all of this.
+
+
 [1]:https://github.com/DanielTakeshi/pytorch_geometric/commit/a8601aafd7fc52b87b3f85e86013e64cb7af3e2d
 [2]:https://github.com/pyg-team/pytorch_geometric/commit/97d55577f1d0bf33c1bfbe0ef864923ad5cb844d

@@ -1,11 +1,4 @@
-import os.path as osp
-
 import torch
-import torch.nn.functional as F
-
-import torch_geometric.transforms as T
-from torch_geometric.datasets import ModelNet
-from torch_geometric.loader import DataLoader
 from torch_geometric.nn import MLP, PointConv, fps, global_max_pool, radius
 
 
@@ -41,7 +34,8 @@ class GlobalSAModule(torch.nn.Module):
 
 
 class Net(torch.nn.Module):
-    def __init__(self):
+
+    def __init__(self, out_channels):
         super().__init__()
 
         # Input channels account for both `pos` and node features.
@@ -49,57 +43,13 @@ class Net(torch.nn.Module):
         self.sa2_module = SAModule(0.25, 0.4, MLP([128 + 3, 128, 128, 256]))
         self.sa3_module = GlobalSAModule(MLP([256 + 3, 256, 512, 1024]))
 
-        self.mlp = MLP([1024, 512, 256, 10], dropout=0.5, batch_norm=False)
+        self.mlp = MLP([1024, 512, 256, out_channels], dropout=0.5, batch_norm=False)
 
-    def forward(self, data):
-        sa0_out = (data.x, data.pos, data.batch)
+    def forward(self, x, pos, batch):
+        sa0_out = (x, pos, batch)
         sa1_out = self.sa1_module(*sa0_out)
         sa2_out = self.sa2_module(*sa1_out)
         sa3_out = self.sa3_module(*sa2_out)
         x, pos, batch = sa3_out
 
         return self.mlp(x).log_softmax(dim=-1)
-
-
-def train(epoch):
-    model.train()
-
-    for data in train_loader:
-        data = data.to(device)
-        optimizer.zero_grad()
-        loss = F.nll_loss(model(data), data.y)
-        loss.backward()
-        optimizer.step()
-
-
-def test(loader):
-    model.eval()
-
-    correct = 0
-    for data in loader:
-        data = data.to(device)
-        with torch.no_grad():
-            pred = model(data).max(1)[1]
-        correct += pred.eq(data.y).sum().item()
-    return correct / len(loader.dataset)
-
-
-if __name__ == '__main__':
-    path = osp.join(osp.dirname(osp.realpath(__file__)), '..',
-                    'data/ModelNet10')
-    pre_transform, transform = T.NormalizeScale(), T.SamplePoints(1024)
-    train_dataset = ModelNet(path, '10', True, transform, pre_transform)
-    test_dataset = ModelNet(path, '10', False, transform, pre_transform)
-    train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True,
-                              num_workers=6)
-    test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False,
-                             num_workers=6)
-
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    model = Net().to(device)
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
-
-    for epoch in range(1, 201):
-        train(epoch)
-        test_acc = test(test_loader)
-        print(f'Epoch: {epoch:03d}, Test: {test_acc:.4f}')
