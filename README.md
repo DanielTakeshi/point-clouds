@@ -12,6 +12,7 @@ conda install pytorch==1.10.0 torchvision==0.11.0 torchaudio==0.10.0 cudatoolkit
 conda install pyg -c pyg -c conda-forge
 conda install ipython -y
 pip install matplotlib
+pip install class-resolver
 pip install wandb
 ```
 </details>
