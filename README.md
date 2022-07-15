@@ -1,4 +1,4 @@
-# point-clouds
+# Learning from Point Clouds
 
 <details>
 <summary>
@@ -28,4 +28,13 @@ A few general comments:
   with `torch`.
 - But, [check that `torch` can see the GPU](https://stackoverflow.com/questions/48152674/how-to-check-if-pytorch-is-using-the-gpu).
 
-<
+
+Careful, Pytorch Geometric is actively getting updated so the example scripts
+sometimes use different APIs ([see this change, for example][1]). As of
+2022/07/15 I am using version 2.0.4, so if copying any script from the examples
+directory, copy the files from [the commit tagged at that version][2] on
+2022/03/12.
+
+
+[1]:https://github.com/DanielTakeshi/pytorch_geometric/commit/a8601aafd7fc52b87b3f85e86013e64cb7af3e2d
+[2]:https://github.com/pyg-team/pytorch_geometric/commit/97d55577f1d0bf33c1bfbe0ef864923ad5cb844d
